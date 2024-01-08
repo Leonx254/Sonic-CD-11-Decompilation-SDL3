@@ -24,7 +24,7 @@ android {
             autobuildFlag = true
         externalNativeBuild {
             cmake {
-                arguments "-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android", "-DRETRO_DISABLE_PLUS=$autobuildFlag"
+                arguments "-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android", "-DRETRO_SDL_VERSION=3", "-DRETRO_DISABLE_PLUS=$autobuildFlag"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }

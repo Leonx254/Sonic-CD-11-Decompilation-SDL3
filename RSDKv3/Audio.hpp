@@ -6,7 +6,11 @@
 #include <vorbis/vorbisfile.h>
 
 #if RETRO_PLATFORM != RETRO_VITA && RETRO_PLATFORM != RETRO_OSX
+#if RETRO_USING_SDL3
+#include "SDL3/SDL.h"
+#else
 #include "SDL.h"
+#endif
 #endif
 
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
@@ -15,8 +19,20 @@
 #define UnlockAudioDevice() SDL_UnlockAudio()
 
 #else
-#define LockAudioDevice()   ;
-#define UnlockAudioDevice() ;
+#undef SDL_AudioStreamPut
+#undef SDL_AudioStreamAvailable
+#undef SDL_AudioStreamFlush
+#undef SDL_AudioStreamGet
+#undef SDL_AudioStreamClear
+#undef SDL_FreeAudioStream
+#define LockAudioDevice()                       SDL_LockAudioStream(nullptr)
+#define UnlockAudioDevice()                     SDL_UnlockAudioStream(nullptr)
+#define SDL_AudioStreamPut                      SDL_PutAudioStreamData
+#define SDL_AudioStreamAvailable                SDL_GetAudioStreamAvailable
+#define SDL_AudioStreamFlush                    SDL_FlushAudioStream
+#define SDL_AudioStreamGet                      SDL_GetAudioStreamData
+#define SDL_AudioStreamClear                    SDL_ClearAudioStream
+#define SDL_FreeAudioStream                     SDL_DestroyAudioStream
 #endif
 
 #define TRACK_COUNT   (0x10)
@@ -42,7 +58,7 @@ struct StreamInfo {
 #if RETRO_USING_SDL1
     SDL_AudioSpec spec;
 #endif
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     SDL_AudioStream *stream;
 #endif
     Sint16 buffer[MIX_BUFFER_SAMPLES];
@@ -103,28 +119,30 @@ extern StreamInfo streamInfo[STREAMFILE_COUNT];
 extern StreamFile *streamFilePtr;
 extern StreamInfo *streamInfoPtr;
 
-#if RETRO_USING_SDL1 || RETRO_USING_SDL2
+#if RETRO_USING_SDL1 || RETRO_USING_SDL2 || RETRO_USING_SDL3
 extern SDL_AudioSpec audioDeviceFormat;
+extern SDL_AudioStream *wav_stream;
 #endif
 
 int InitAudioPlayback();
 void LoadGlobalSfx();
 
-#if RETRO_USING_SDL1 || RETRO_USING_SDL2
+#if RETRO_USING_SDL1 || RETRO_USING_SDL2 || RETRO_USING_SDL3
 void ProcessMusicStream(void *data, Sint16 *stream, int len);
 void ProcessAudioPlayback(void *data, Uint8 *stream, int len);
+void ProcessAudioCallback(void *userdata, SDL_AudioStream *stream, int additional_amount, int total_amount);
 void ProcessAudioMixing(Sint32 *dst, const Sint16 *src, int len, int volume, sbyte pan);
 
 inline void FreeMusInfo()
 {
     LockAudioDevice();
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     if (streamInfo[currentStreamIndex].stream)
         SDL_FreeAudioStream(streamInfo[currentStreamIndex].stream);
 #endif
     ov_clear(&streamInfo[currentStreamIndex].vorbisFile);
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     streamInfo[currentStreamIndex].stream = nullptr;
 #endif
     if (streamFile[currentStreamIndex].buffer)
@@ -203,7 +221,11 @@ inline void ReleaseGlobalSfx()
     for (int i = globalSFXCount - 1; i >= 0; --i) {
         if (sfxList[i].loaded) {
             StrCopy(sfxList[i].name, "");
+#if RETRO_USING_SDL3
+            SDL_free(sfxList[i].buffer);
+#else
             free(sfxList[i].buffer);
+#endif
             sfxList[i].length = 0;
             sfxList[i].loaded = false;
         }
@@ -215,7 +237,11 @@ inline void ReleaseStageSfx()
     for (int i = stageSFXCount + globalSFXCount; i >= globalSFXCount; --i) {
         if (sfxList[i].loaded) {
             StrCopy(sfxList[i].name, "");
+#if RETRO_USING_SDL3
+            SDL_free(sfxList[i].buffer);
+#else
             free(sfxList[i].buffer);
+#endif
             sfxList[i].length = 0;
             sfxList[i].loaded = false;
         }

@@ -182,7 +182,12 @@ bool ReadSaveRAMData()
             return false;
         useSGame = true;
     }
+#if !RETRO_USING_SDL3
     fRead(saveRAM, 4, SAVEDATA_SIZE, saveFile);
+#else
+    fRead(saveRAM, SAVEDATA_SIZE, saveFile);
+ #endif
+
 
     fClose(saveFile);
     return true;
@@ -273,7 +278,11 @@ bool WriteSaveRAMData()
 #endif
 #endif
 
+#if !RETRO_USING_SDL3
     fWrite(saveRAM, 4, SAVEDATA_SIZE, saveFile);
+#else
+    fWrite(saveRAM, SAVEDATA_SIZE, saveFile);
+#endif
     fClose(saveFile);
     return true;
 }
@@ -376,6 +385,35 @@ void InitUserdata()
         ini.SetFloat("Audio", "BGMVolume", bgmVolume / (float)MAX_VOLUME);
         ini.SetFloat("Audio", "SFXVolume", sfxVolume / (float)MAX_VOLUME);
 
+#if RETRO_USING_SDL3
+        ini.SetComment("Keyboard 1", "IK1Comment",
+                       "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL3/SDLScancodeLookup.mediawiki)");
+        ini.SetInteger("Keyboard 1", "Up", inputDevice[INPUT_UP].keyMappings = SDL_SCANCODE_UP);
+        ini.SetInteger("Keyboard 1", "Down", inputDevice[INPUT_DOWN].keyMappings = SDL_SCANCODE_DOWN);
+        ini.SetInteger("Keyboard 1", "Left", inputDevice[INPUT_LEFT].keyMappings = SDL_SCANCODE_LEFT);
+        ini.SetInteger("Keyboard 1", "Right", inputDevice[INPUT_RIGHT].keyMappings = SDL_SCANCODE_RIGHT);
+        ini.SetInteger("Keyboard 1", "A", inputDevice[INPUT_BUTTONA].keyMappings = SDL_SCANCODE_Z);
+        ini.SetInteger("Keyboard 1", "B", inputDevice[INPUT_BUTTONB].keyMappings = SDL_SCANCODE_X);
+        ini.SetInteger("Keyboard 1", "C", inputDevice[INPUT_BUTTONC].keyMappings = SDL_SCANCODE_C);
+        ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings = SDL_SCANCODE_RETURN);
+
+        ini.SetComment(
+            "Controller 1", "IC1Comment",
+            "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL3/SDL_GameControllerButton.mediawiki)");
+        ini.SetInteger("Controller 1", "Up", inputDevice[INPUT_UP].contMappings = SDL_GAMEPAD_BUTTON_DPAD_UP);
+        ini.SetInteger("Controller 1", "Down", inputDevice[INPUT_DOWN].contMappings = SDL_GAMEPAD_BUTTON_DPAD_DOWN);
+        ini.SetInteger("Controller 1", "Left", inputDevice[INPUT_LEFT].contMappings = SDL_GAMEPAD_BUTTON_DPAD_LEFT);
+        ini.SetInteger("Controller 1", "Right", inputDevice[INPUT_RIGHT].contMappings = SDL_GAMEPAD_BUTTON_DPAD_RIGHT);
+        ini.SetInteger("Controller 1", "A", inputDevice[INPUT_BUTTONA].contMappings = SDL_GAMEPAD_BUTTON_SOUTH);
+        ini.SetInteger("Controller 1", "B", inputDevice[INPUT_BUTTONB].contMappings = SDL_GAMEPAD_BUTTON_EAST);
+        ini.SetInteger("Controller 1", "C", inputDevice[INPUT_BUTTONC].contMappings = SDL_GAMEPAD_BUTTON_WEST);
+        ini.SetInteger("Controller 1", "Start", inputDevice[INPUT_START].contMappings = SDL_GAMEPAD_BUTTON_START);
+
+        ini.SetFloat("Controller 1", "LStickDeadzone", LSTICK_DEADZONE = 0.3);
+        ini.SetFloat("Controller 1", "RStickDeadzone", RSTICK_DEADZONE = 0.3);
+        ini.SetFloat("Controller 1", "LTriggerDeadzone", LTRIGGER_DEADZONE = 0.3);
+        ini.SetFloat("Controller 1", "RTriggerDeadzone", RTRIGGER_DEADZONE = 0.3);
+#endif
 #if RETRO_USING_SDL2
         ini.SetComment("Keyboard 1", "IK1Comment",
                        "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDLScancodeLookup.mediawiki)");
@@ -534,6 +572,50 @@ void InitUserdata()
         if (sfxVolume < 0)
             sfxVolume = 0;
 
+#if RETRO_USING_SDL3
+        if (!ini.GetInteger("Keyboard 1", "Up", &inputDevice[INPUT_UP].keyMappings))
+            inputDevice[0].keyMappings = SDL_SCANCODE_UP;
+        if (!ini.GetInteger("Keyboard 1", "Down", &inputDevice[INPUT_DOWN].keyMappings))
+            inputDevice[1].keyMappings = SDL_SCANCODE_DOWN;
+        if (!ini.GetInteger("Keyboard 1", "Left", &inputDevice[INPUT_LEFT].keyMappings))
+            inputDevice[2].keyMappings = SDL_SCANCODE_LEFT;
+        if (!ini.GetInteger("Keyboard 1", "Right", &inputDevice[INPUT_RIGHT].keyMappings))
+            inputDevice[3].keyMappings = SDL_SCANCODE_RIGHT;
+        if (!ini.GetInteger("Keyboard 1", "A", &inputDevice[INPUT_BUTTONA].keyMappings))
+            inputDevice[4].keyMappings = SDL_SCANCODE_Z;
+        if (!ini.GetInteger("Keyboard 1", "B", &inputDevice[INPUT_BUTTONB].keyMappings))
+            inputDevice[5].keyMappings = SDL_SCANCODE_X;
+        if (!ini.GetInteger("Keyboard 1", "C", &inputDevice[INPUT_BUTTONC].keyMappings))
+            inputDevice[6].keyMappings = SDL_SCANCODE_C;
+        if (!ini.GetInteger("Keyboard 1", "Start", &inputDevice[INPUT_START].keyMappings))
+            inputDevice[7].keyMappings = SDL_SCANCODE_RETURN;
+
+        if (!ini.GetInteger("Controller 1", "Up", &inputDevice[INPUT_UP].contMappings))
+            inputDevice[0].contMappings = SDL_GAMEPAD_BUTTON_DPAD_UP;
+        if (!ini.GetInteger("Controller 1", "Down", &inputDevice[INPUT_DOWN].contMappings))
+            inputDevice[1].contMappings = SDL_GAMEPAD_BUTTON_DPAD_DOWN;
+        if (!ini.GetInteger("Controller 1", "Left", &inputDevice[INPUT_LEFT].contMappings))
+            inputDevice[2].contMappings = SDL_GAMEPAD_BUTTON_DPAD_LEFT;
+        if (!ini.GetInteger("Controller 1", "Right", &inputDevice[INPUT_RIGHT].contMappings))
+            inputDevice[3].contMappings = SDL_GAMEPAD_BUTTON_DPAD_RIGHT;
+        if (!ini.GetInteger("Controller 1", "A", &inputDevice[INPUT_BUTTONA].contMappings))
+            inputDevice[4].contMappings = SDL_GAMEPAD_BUTTON_SOUTH;
+        if (!ini.GetInteger("Controller 1", "B", &inputDevice[INPUT_BUTTONB].contMappings))
+            inputDevice[5].contMappings = SDL_GAMEPAD_BUTTON_EAST;
+        if (!ini.GetInteger("Controller 1", "C", &inputDevice[INPUT_BUTTONC].contMappings))
+            inputDevice[6].contMappings = SDL_GAMEPAD_BUTTON_WEST;
+        if (!ini.GetInteger("Controller 1", "Start", &inputDevice[INPUT_START].contMappings))
+            inputDevice[7].contMappings = SDL_GAMEPAD_BUTTON_START;
+
+        if (!ini.GetFloat("Controller 1", "LStickDeadzone", &LSTICK_DEADZONE))
+            LSTICK_DEADZONE = 0.3;
+        if (!ini.GetFloat("Controller 1", "RStickDeadzone", &RSTICK_DEADZONE))
+            RSTICK_DEADZONE = 0.3;
+        if (!ini.GetFloat("Controller 1", "LTriggerDeadzone", &LTRIGGER_DEADZONE))
+            LTRIGGER_DEADZONE = 0.3;
+        if (!ini.GetFloat("Controller 1", "RTriggerDeadzone", &RTRIGGER_DEADZONE))
+            RTRIGGER_DEADZONE = 0.3;
+#endif
 #if RETRO_USING_SDL2
         if (!ini.GetInteger("Keyboard 1", "Up", &inputDevice[INPUT_UP].keyMappings))
             inputDevice[0].keyMappings = SDL_SCANCODE_UP;
@@ -697,12 +779,16 @@ void InitUserdata()
     sprintf(buffer, BASE_PATH "controllerdb.txt");
 #endif
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     file = fOpen(buffer, "rb");
     if (file) {
         fClose(file);
 
+#if RETRO_USING_SDL3
+        int nummaps = SDL_AddGamepadMappingsFromFile(buffer);
+#else
         int nummaps = SDL_GameControllerAddMappingsFromFile(buffer);
+#endif
         if (nummaps >= 0)
             PrintLog("loaded %d controller mappings from '%s'\n", buffer, nummaps);
     }
@@ -811,7 +897,7 @@ void WriteSettings()
     ini.SetFloat("Audio", "BGMVolume", bgmVolume / (float)MAX_VOLUME);
     ini.SetFloat("Audio", "SFXVolume", sfxVolume / (float)MAX_VOLUME);
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     ini.SetComment("Keyboard 1", "IK1Comment",
                    "Keyboard Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDLScancodeLookup.mediawiki)");
 #endif
@@ -827,7 +913,7 @@ void WriteSettings()
     ini.SetInteger("Keyboard 1", "C", inputDevice[INPUT_BUTTONC].keyMappings);
     ini.SetInteger("Keyboard 1", "Start", inputDevice[INPUT_START].keyMappings);
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
     ini.SetComment("Controller 1", "IC1Comment",
                    "Controller Mappings for P1 (Based on: https://github.com/libsdl-org/sdlwiki/blob/main/SDL2/SDL_GameControllerButton.mediawiki)");
     ini.SetComment("Controller 1", "IC1Comment2", "Extra buttons can be mapped with the following IDs:");
@@ -917,11 +1003,19 @@ void ReadUserdata()
 
     int buf = 0;
     for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) {
+#if !RETRO_USING_SDL3
         fRead(&buf, 4, 1, userFile);
+#else
+        fRead(&buf, 1, userFile);
+#endif
         achievements[a].status = buf;
     }
     for (int l = 0; l < LEADERBOARD_COUNT; ++l) {
+#if !RETRO_USING_SDL3
         fRead(&buf, 4, 1, userFile);
+#else
+        fRead(&buf, 1, userFile);
+#endif
         leaderboards[l].score = buf;
         if (!leaderboards[l].score)
             leaderboards[l].score = 0x7FFFFFF;
@@ -973,8 +1067,13 @@ void WriteUserdata()
     if (!userFile)
         return;
 
+#if !RETRO_USING_SDL3
     for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 4, 1, userFile);
     for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 4, 1, userFile);
+#else
+    for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 1, userFile);
+    for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 1, userFile);
+#endif
 
     fClose(userFile);
 

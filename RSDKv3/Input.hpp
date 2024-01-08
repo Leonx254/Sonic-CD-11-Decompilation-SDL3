@@ -54,8 +54,15 @@ extern InputData keyDown;
 extern bool anyPress;
 
 extern int touchDown[8];
+#if RETRO_USING_SDL3 && !RETRO_USING_ORIGINAL_CODE
+#undef SDL_CONTROLLER_BUTTON_MAX
+#define SDL_CONTROLLER_BUTTON_MAX SDL_GAMEPAD_BUTTON_MAX
+extern float touchX[8];
+extern float touchY[8];
+#else
 extern int touchX[8];
 extern int touchY[8];
+#endif
 extern int touchID[8];
 extern int touches;
 
@@ -72,9 +79,8 @@ extern float RTRIGGER_DEADZONE;
 
 extern int mouseHideTimer;
 #endif
-
 #if !RETRO_USE_ORIGINAL_CODE
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL2 || RETRO_USING_SDL3
 // Easier this way
 enum ExtraSDLButtons {
     SDL_CONTROLLER_BUTTON_ZL = SDL_CONTROLLER_BUTTON_MAX + 1,
@@ -89,7 +95,6 @@ enum ExtraSDLButtons {
     SDL_CONTROLLER_BUTTON_RSTICK_RIGHT,
     SDL_CONTROLLER_BUTTON_MAX_EXTRA,
 };
-
 void ControllerInit(byte controllerID);
 void ControllerClose(byte controllerID);
 #endif
