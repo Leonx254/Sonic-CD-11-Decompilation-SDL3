@@ -4,8 +4,6 @@
 
 #if RETRO_PLATFORM == RETRO_WIN && _MSC_VER
 #include "Windows.h"
-#else
-#include <SDL3/SDL_main.h>
 #endif
 
 void parseArguments(int argc, char *argv[])
@@ -50,12 +48,12 @@ void parseArguments(int argc, char *argv[])
 }
 #endif
 
-
 int main(int argc, char *argv[])
 {
 #if !RETRO_USE_ORIGINAL_CODE
     parseArguments(argc, argv);
 #endif
+
     Engine.Init();
     Engine.Run();
 
@@ -69,7 +67,3 @@ int main(int argc, char *argv[])
 
     return 0;
 }
-
-#ifdef _WIN32
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) { return main(__argc, __argv); }
-#endif

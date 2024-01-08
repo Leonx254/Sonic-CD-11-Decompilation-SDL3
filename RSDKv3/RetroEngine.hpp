@@ -107,29 +107,22 @@ typedef unsigned int uint;
 #define DEFAULT_FULLSCREEN   false
 #endif
 
-#if !defined(RETRO_USE_SDL3) && !defined(RETRO_USE_SDL2) && !defined(RETRO_USE_SDL1)
-#define RETRO_USE_SDL3 (1)
+#if !defined(RETRO_USE_SDL2) && !defined(RETRO_USE_SDL1)
+#define RETRO_USE_SDL2 (1)
 #endif
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_VITA                        \
     || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX
-#ifdef RETRO_USE_SDL3
-#define RETRO_USING_SDL1 (0)
-#define RETRO_USING_SDL2 (0)
-#define RETRO_USING_SDL3 (1)
-#elif defined (RETRO_USE_SDL2)
+#ifdef RETRO_USE_SDL2
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (1)
-#define RETRO_USING_SDL3 (0)
-#elif defined (RETRO_USE_SDL1)
+#elif defined(RETRO_USE_SDL1)
 #define RETRO_USING_SDL1 (1)
 #define RETRO_USING_SDL2 (0)
-#define RETRO_USING_SDL3 (0)
 #endif
 #else // Since its an else & not an elif these platforms probably aren't supported yet
 #define RETRO_USING_SDL1 (0)
 #define RETRO_USING_SDL2 (0)
-#define RETRO_USING_SDL3 (0)
 #endif
 
 #if RETRO_PLATFORM == RETRO_iOS || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_WP7
@@ -349,9 +342,7 @@ enum RetroBytecodeFormat {
 #define SCREEN_CENTERY (SCREEN_YSIZE / 2)
 
 #if RETRO_PLATFORM == RETRO_WIN || RETRO_PLATFORM == RETRO_UWP || RETRO_PLATFORM == RETRO_ANDROID || RETRO_PLATFORM == RETRO_LINUX
-#if RETRO_USING_SDL3
-#include <SDL3/SDL.h>
-#elif RETRO_USING_SDL2
+#if RETRO_USING_SDL2
 #include <SDL.h>
 #elif RETRO_USING_SDL1
 #include <SDL.h>
@@ -547,7 +538,7 @@ public:
     int windowXSize; // width of window/screen in the previous frame
     int windowYSize; // height of window/screen in the previous frame
 
-#if RETRO_USING_SDL2 || RETRO_USING_SDL3
+#if RETRO_USING_SDL2
     SDL_Window *window = nullptr;
 #if !RETRO_USING_OPENGL
     SDL_Renderer *renderer      = nullptr;

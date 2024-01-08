@@ -32,215 +32,6 @@ inline int GetLowerRate(int intendRate, int targetRate)
 
 bool ProcessEvents()
 {
-#if RETRO_USING_SDL3
-    while (SDL_PollEvent(&Engine.sdlEvents)) {
-        // Main Events
-        switch (Engine.sdlEvents.type) {
-            case SDL_EVENT_WINDOW_MAXIMIZED: {
-                SDL_RestoreWindow(Engine.window);
-                //SDL_SetWindowFullscreen(Engine.window, SDL_WINDOW_FULLSCREEN_DESKTOP);
-                Engine.isFullScreen = true;
-                break;
-            }
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED: Engine.gameMode = ENGINE_EXITGAME; return false;
-            case SDL_EVENT_WINDOW_FOCUS_LOST:
-                if (!((disableFocusPause + 1) & 1))
-                    Engine.message = MESSAGE_LOSTFOCUS;
-                Engine.hasFocus = false;
-                break;
-            case SDL_EVENT_WINDOW_FOCUS_GAINED: Engine.hasFocus = true; break;
-            case SDL_EVENT_GAMEPAD_ADDED: ControllerInit(Engine.sdlEvents.gdevice.which); break;
-            case SDL_EVENT_GAMEPAD_REMOVED: ControllerClose(Engine.sdlEvents.gdevice.which); break;
-            case SDL_EVENT_WILL_ENTER_BACKGROUND:
-                if (!((disableFocusPause + 1) & 1))
-                    Engine.message = MESSAGE_LOSTFOCUS;
-                Engine.hasFocus = false;
-                break;
-            case SDL_EVENT_WILL_ENTER_FOREGROUND: Engine.hasFocus = true; break;
-            case SDL_EVENT_TERMINATING: Engine.gameMode = ENGINE_EXITGAME; return false;
-
-#if defined(RETRO_USING_MOUSE)
-            case SDL_EVENT_MOUSE_MOTION:
-                if (touches <= 1) { // Touch always takes priority over mouse
-                    uint state = SDL_GetMouseState(&touchX[0], &touchY[0]);
-
-                    int width = 0, height = 0;
-                    SDL_GetWindowSize(Engine.window, &width, &height);
-                    touchX[0] = ((touchX[0] - viewOffsetX) / (float)width) * SCREEN_XSIZE;
-                    touchY[0] = (touchY[0] / (float)height) * SCREEN_YSIZE;
-
-                    touchDown[0] = state & SDL_BUTTON_LMASK;
-                    if (touchDown[0])
-                        touches = 1;
-                }
-                break;
-            case SDL_EVENT_MOUSE_BUTTON_DOWN:
-                if (touches <= 1) { // Touch always takes priority over mouse
-                    switch (Engine.sdlEvents.button.button) {
-                        case SDL_BUTTON_LEFT: touchDown[0] = true; break;
-                    }
-                    touches = 1;
-                }
-                break;
-            case SDL_EVENT_MOUSE_BUTTON_UP:
-                if (touches <= 1) { // Touch always takes priority over mouse
-                    switch (Engine.sdlEvents.button.button) {
-                        case SDL_BUTTON_LEFT: touchDown[0] = false; break;
-                    }
-                    touches = 0;
-                }
-                break;
-#endif
-#if defined(RETRO_USING_TOUCH)
-            case SDL_EVENT_FINGER_MOTION:
-            case SDL_EVENT_FINGER_DOWN:
-            case SDL_EVENT_FINGER_UP: {
-                int count = SDL_GetNumTouchFingers(Engine.sdlEvents.tfinger.touchId);
-                touches   = 0;
-                for (int i = 0; i < count; i++) {
-                    SDL_Finger *finger = SDL_GetTouchFinger(Engine.sdlEvents.tfinger.touchId, i);
-                    if (finger) {
-                        touchDown[touches] = true;
-                        touchX[touches]    = finger->x * SCREEN_XSIZE;
-                        touchY[touches]    = finger->y * SCREEN_YSIZE;
-                        touches++;
-                    }
-                }
-                break;
-            }
-#endif
-            case SDL_EVENT_KEY_DOWN:
-                switch (Engine.sdlEvents.key.keysym.sym) {
-                    default: break;
-
-                    case SDLK_ESCAPE:
-                        if (Engine.devMenu) {
-#if RETRO_USE_MOD_LOADER
-                            // hacky patch because people can escape
-                            if (Engine.gameMode == ENGINE_DEVMENU && stageMode == DEVMENU_MODMENU) {
-                                RefreshEngine();
-                            }
-#endif
-
-                            Engine.gameMode = ENGINE_INITDEVMENU;
-                        }
-                        break;
-
-                    case SDLK_F1:
-                        if (Engine.devMenu) {
-                            activeStageList   = 0;
-                            stageListPosition = 0;
-                            stageMode         = STAGEMODE_LOAD;
-                            Engine.gameMode   = ENGINE_MAINGAME;
-                        }
-                        break;
-
-                    case SDLK_F2:
-                        if (Engine.devMenu) {
-                            stageListPosition--;
-                            if (stageListPosition < 0) {
-                                activeStageList--;
-
-                                if (activeStageList < 0) {
-                                    activeStageList = 3;
-                                }
-                                stageListPosition = stageListCount[activeStageList] - 1;
-                            }
-                            stageMode       = STAGEMODE_LOAD;
-                            Engine.gameMode = ENGINE_MAINGAME;
-                            SetGlobalVariableByName("LampPost.Check", 0);
-                            SetGlobalVariableByName("Warp.XPos", 0);
-                        }
-                        break;
-
-                    case SDLK_F3:
-                        if (Engine.devMenu) {
-                            stageListPosition++;
-                            if (stageListPosition >= stageListCount[activeStageList]) {
-                                activeStageList++;
-
-                                stageListPosition = 0;
-
-                                if (activeStageList >= 4) {
-                                    activeStageList = 0;
-                                }
-                            }
-                            stageMode       = STAGEMODE_LOAD;
-                            Engine.gameMode = ENGINE_MAINGAME;
-                            SetGlobalVariableByName("LampPost.Check", 0);
-                            SetGlobalVariableByName("Warp.XPos", 0);
-                        }
-                        break;
-
-                    case SDLK_F4:
-                        Engine.isFullScreen ^= 1;
-                        SetFullScreen(Engine.isFullScreen);
-                        break;
-
-                    case SDLK_F5:
-                        if (Engine.devMenu) {
-                            currentStageFolder[0] = 0; // reload all assets & scripts
-                            stageMode             = STAGEMODE_LOAD;
-                        }
-                        break;
-
-                    case SDLK_F8:
-                        if (Engine.devMenu)
-                            showHitboxes ^= 2;
-                        break;
-
-                    case SDLK_F9:
-                        if (Engine.devMenu)
-                            showHitboxes ^= 1;
-                        break;
-
-                    case SDLK_F10:
-                        if (Engine.devMenu)
-                            Engine.showPaletteOverlay ^= 1;
-                        break;
-
-                    case SDLK_BACKSPACE:
-                        if (Engine.devMenu)
-                            Engine.gameSpeed = Engine.fastForwardSpeed;
-                        break;
-
-#if RETRO_PLATFORM == RETRO_OSX
-                    case SDLK_F6:
-                        if (Engine.masterPaused)
-                            Engine.frameStep = true;
-                        break;
-
-                    case SDLK_F7:
-                        if (Engine.devMenu)
-                            Engine.masterPaused ^= 1;
-                        break;
-#else
-                    case SDLK_F11:
-                    case SDLK_INSERT:
-                        if (Engine.masterPaused)
-                            Engine.frameStep = true;
-                        break;
-
-                    case SDLK_F12:
-                    case SDLK_PAUSE:
-                        if (Engine.devMenu)
-                            Engine.masterPaused ^= 1;
-                        break;
-#endif
-                }
-
-                break;
-            case SDL_EVENT_KEY_UP:
-                switch (Engine.sdlEvents.key.keysym.sym) {
-                    default: break;
-                    case SDLK_BACKSPACE: Engine.gameSpeed = 1; break;
-                }
-                break;
-            case SDL_EVENT_QUIT: Engine.gameMode = ENGINE_EXITGAME; return false;
-        }
-    }
-#endif // RETRO_USING_SDL3
-
 #if RETRO_USING_SDL1 || RETRO_USING_SDL2
     while (SDL_PollEvent(&Engine.sdlEvents)) {
         // Main Events
@@ -504,13 +295,9 @@ void RetroEngine::Init()
     running  = false;
     if (LoadGameConfig("Data/Game/GameConfig.bin")) {
         if (InitRenderDevice()) {
-            PrintLog("Render Initiated");
             if (InitAudioPlayback()) {
-                PrintLog("Audio Initiated");
                 InitFirstStage();
-                PrintLog("Stage Initiated");
                 ClearScriptData();
-                PrintLog("Script Data Cleaned");
                 initialised = true;
                 running     = true;
                 gameMode    = ENGINE_MAINGAME;
@@ -548,7 +335,6 @@ void RetroEngine::Init()
         }
 
         char textBuf[0x100];
-#if !RETRO_USING_SDL3
         sprintf(textBuf, "RETRO ENGINE v3 USAGE:\n");
         fWrite(textBuf, 1, strlen(textBuf), f);
 
@@ -560,19 +346,7 @@ void RetroEngine::Init()
 
         sprintf(textBuf, "- OR extract a data pack and place the \"Data\" folder in the asset directory\n");
         fWrite(textBuf, 1, strlen(textBuf), f);
-#else
-        sprintf(textBuf, "RETRO ENGINE v3 USAGE:\n");
-        fWrite(textBuf, strlen(textBuf), f);
 
-        sprintf(textBuf, "- Open the asset directory '%s' in a file browser\n", !rootDir[0] ? "./" : rootDir);
-        fWrite(textBuf, strlen(textBuf), f);
-
-        sprintf(textBuf, "- Place a data pack named '%s' in the asset directory\n", Engine.dataFile);
-        fWrite(textBuf, strlen(textBuf), f);
-
-        sprintf(textBuf, "- OR extract a data pack and place the \"Data\" folder in the asset directory\n");
-        fWrite(textBuf, strlen(textBuf), f);
-#endif
         fClose(f);
     }
 #endif
@@ -679,7 +453,7 @@ void RetroEngine::Run()
 
         FlipScreen();
 
-#if RETRO_USING_OPENGL && RETRO_USING_SDL2 || RETRO_USING_SDL3
+#if RETRO_USING_OPENGL && RETRO_USING_SDL2
         SDL_GL_SwapWindow(Engine.window);
 #endif
         frameStep      = false;
@@ -704,7 +478,7 @@ void RetroEngine::Run()
     SaveMods();
 #endif
 
-#if RETRO_USING_SDL1 || RETRO_USING_SDL2 || RETRO_USING_SDL3
+#if RETRO_USING_SDL1 || RETRO_USING_SDL2
     SDL_Quit();
 #endif
 }

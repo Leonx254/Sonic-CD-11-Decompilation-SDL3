@@ -273,7 +273,6 @@ public class HIDDeviceManager {
         final int XB1_IFACE_SUBCLASS = 71;
         final int XB1_IFACE_PROTOCOL = 208;
         final int[] SUPPORTED_VENDORS = {
-            0x03f0, // HP
             0x044f, // Thrustmaster
             0x045e, // Microsoft
             0x0738, // Mad Catz
@@ -285,7 +284,6 @@ public class HIDDeviceManager {
             0x24c6, // PowerA
             0x2dc8, // 8BitDo
             0x2e24, // Hyperkin
-            0x3537, // GameSir
         };
 
         if (usbInterface.getId() == 0 &&
@@ -359,15 +357,8 @@ public class HIDDeviceManager {
     private void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
 
-        // Android studio throws a fit with this so commented out for now
-        //if (Build.VERSION.SDK_INT >= 31 /* Android 12  */ &&
-        //    mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH_CONNECT, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
-        //    Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH_CONNECT");
-        //    return;
-        //}
-
         if (Build.VERSION.SDK_INT <= 30 /* Android 11.0 (R) */ &&
-                mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+            mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
             Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
             return;
         }
@@ -607,9 +598,9 @@ public class HIDDeviceManager {
         return false;
     }
 
-    public int writeReport(int deviceID, byte[] report, boolean feature) {
+    public int sendOutputReport(int deviceID, byte[] report) {
         try {
-            //Log.v(TAG, "writeReport deviceID=" + deviceID + " length=" + report.length);
+            //Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -617,16 +608,33 @@ public class HIDDeviceManager {
                 return -1;
             }
 
-            return device.writeReport(report, feature);
+            return device.sendOutputReport(report);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
         return -1;
     }
 
-    public boolean readReport(int deviceID, byte[] report, boolean feature) {
+    public int sendFeatureReport(int deviceID, byte[] report) {
         try {
-            //Log.v(TAG, "readReport deviceID=" + deviceID);
+            //Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
+            HIDDevice device;
+            device = getDevice(deviceID);
+            if (device == null) {
+                HIDDeviceDisconnected(deviceID);
+                return -1;
+            }
+
+            return device.sendFeatureReport(report);
+        } catch (Exception e) {
+            Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
+        }
+        return -1;
+    }
+
+    public boolean getFeatureReport(int deviceID, byte[] report) {
+        try {
+            //Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
             HIDDevice device;
             device = getDevice(deviceID);
             if (device == null) {
@@ -634,7 +642,7 @@ public class HIDDeviceManager {
                 return false;
             }
 
-            return device.readReport(report, feature);
+            return device.getFeatureReport(report);
         } catch (Exception e) {
             Log.e(TAG, "Got exception: " + Log.getStackTraceString(e));
         }
@@ -671,5 +679,5 @@ public class HIDDeviceManager {
     native void HIDDeviceDisconnected(int deviceID);
 
     native void HIDDeviceInputReport(int deviceID, byte[] report);
-    native void HIDDeviceReportResponse(int deviceID, byte[] report);
+    native void HIDDeviceFeatureReport(int deviceID, byte[] report);
 }

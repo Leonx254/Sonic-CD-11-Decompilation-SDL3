@@ -51,11 +51,7 @@ IniParser::IniParser(const char *filename, bool addPath)
         int ret    = 0;
         int strLen = 0;
         while (true) {
-#if RETRO_USING_SDL3
-            ret = (int)fRead(&buf[strLen++], sizeof(byte), f);
-#else
-            ret = (int)fRead(&buf[strLen++], sizeof(byte), 1, f);
-#endif
+            ret  = (int)fRead(&buf[strLen++], sizeof(byte), 1, f);
             flag = ret == 0;
             if (ret == 0) {
                 strLen--;
@@ -322,38 +318,22 @@ void IniParser::Write(const char *filename, bool addPath)
                 case INI_ITEM_FLOAT:
                 case INI_ITEM_BOOL:
                     sprintf(buffer, "%s=%s\n", items[i].key, items[i].value);
-#if RETRO_USING_SDL3
-                    fWrite(&buffer, StrLength(buffer), f);
-#else
                     fWrite(&buffer, 1, StrLength(buffer), f);
-#endif
                     break;
-                case INI_ITEM_COMMENT: 
+                case INI_ITEM_COMMENT:
                     sprintf(buffer, "; %s\n", items[i].value);
-#if RETRO_USING_SDL3
-                    fWrite(&buffer, StrLength(buffer), f);
-#else
                     fWrite(&buffer, 1, StrLength(buffer), f);
-#endif
                     break;
             }
         }
     }
     sprintf(buffer, "\n");
-#if RETRO_USING_SDL3
-    fWrite(&buffer, StrLength(buffer), f);
-#else
     fWrite(&buffer, StrLength(buffer), 1, f);
-#endif
 
     // Sections
     for (int s = 0; s < c; ++s) {
         sprintf(buffer, "[%s]\n", sections[s]);
-#if RETRO_USING_SDL3
-        fWrite(&buffer, StrLength(buffer), f);
-#else
         fWrite(&buffer, 1, StrLength(buffer), f);
-#endif
         for (int i = 0; i < items.size(); ++i) {
             if (strcmp(sections[s], items[i].section) == 0) {
                 switch (items[i].type) {
@@ -361,21 +341,13 @@ void IniParser::Write(const char *filename, bool addPath)
                     case INI_ITEM_STRING:
                     case INI_ITEM_INT:
                     case INI_ITEM_FLOAT:
-                    case INI_ITEM_BOOL: 
+                    case INI_ITEM_BOOL:
                         sprintf(buffer, "%s=%s\n", items[i].key, items[i].value);
-#if RETRO_USING_SDL3
-                        fWrite(&buffer, StrLength(buffer), f);
-#else
                         fWrite(&buffer, 1, StrLength(buffer), f);
-#endif
                         break;
-                    case INI_ITEM_COMMENT: 
+                    case INI_ITEM_COMMENT:
                         sprintf(buffer, "; %s\n", items[i].value);
-#if RETRO_USING_SDL3
-                        fWrite(&buffer, StrLength(buffer), f);
-#else
                         fWrite(&buffer, 1, StrLength(buffer), f);
-#endif
                         break;
                 }
             }
@@ -383,11 +355,7 @@ void IniParser::Write(const char *filename, bool addPath)
 
         if (s + 1 < c) {
             sprintf(buffer, "\n");
-#if RETRO_USING_SDL3
-            fWrite(&buffer, StrLength(buffer), f);
-#else
             fWrite(&buffer, StrLength(buffer), 1, f);
-#endif
         }
     }
 

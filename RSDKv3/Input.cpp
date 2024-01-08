@@ -9,13 +9,8 @@ InputData keyDown  = InputData();
 bool anyPress = false;
 
 int touchDown[8];
-#if RETRO_USING_SDL3 && !RETRO_USING_ORIGINAL_CODE
-float touchX[8];
-float touchY[8];
-#else
 int touchX[8];
 int touchY[8];
-#endif
 int touchID[8];
 int touches = 0;
 
@@ -165,9 +160,6 @@ int mouseHideTimer = 0;
 int lastMouseX     = 0;
 int lastMouseY     = 0;
 
-#if RETRO_USING_SDL3
-std::vector<SDL_Gamepad *> controllers;
-#endif
 #if RETRO_USING_SDL2
 std::vector<SDL_GameController *> controllers;
 #endif
@@ -337,7 +329,6 @@ bool getControllerButton(byte buttonID)
 }
 #endif //! RETRO_USING_SDL2
 
-#if !RETRO_USING_SDL3
 void ControllerInit(byte controllerID)
 {
     SDL_GameController *controller = SDL_GameControllerOpen(controllerID);
@@ -359,271 +350,10 @@ void ControllerClose(byte controllerID)
         inputType = 0;
     }
 }
-#else
-
-bool getControllerButton(byte buttonID)
-{
-    bool pressed = false;
-
-    for (int i = 0; i < controllers.size(); ++i) {
-        SDL_Gamepad *controller = controllers[i];
-
-        if (SDL_GetGamepadButton(controller, (SDL_GamepadButton)buttonID)) {
-            pressed |= true;
-            continue;
-        }
-        else {
-            switch (buttonID) {
-                default: break;
-                case SDL_GAMEPAD_BUTTON_DPAD_UP: {
-                    int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
-                    float delta = 0;
-                    if (axis < 0)
-                        delta = -normalize(-axis, 1, 32768);
-                    else
-                        delta = normalize(axis, 0, 32767);
-                    pressed |= delta < -LSTICK_DEADZONE;
-                    continue;
-                }
-                case SDL_GAMEPAD_BUTTON_DPAD_DOWN: {
-                    int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
-                    float delta = 0;
-                    if (axis < 0)
-                        delta = -normalize(-axis, 1, 32768);
-                    else
-                        delta = normalize(axis, 0, 32767);
-                    pressed |= delta > LSTICK_DEADZONE;
-                    continue;
-                }
-                case SDL_GAMEPAD_BUTTON_DPAD_LEFT: {
-                    int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
-                    float delta = 0;
-                    if (axis < 0)
-                        delta = -normalize(-axis, 1, 32768);
-                    else
-                        delta = normalize(axis, 0, 32767);
-                    pressed |= delta < -LSTICK_DEADZONE;
-                    continue;
-                }
-                case SDL_GAMEPAD_BUTTON_DPAD_RIGHT: {
-                    int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
-                    float delta = 0;
-                    if (axis < 0)
-                        delta = -normalize(-axis, 1, 32768);
-                    else
-                        delta = normalize(axis, 0, 32767);
-                    pressed |= delta > LSTICK_DEADZONE;
-                    continue;
-                }
-            }
-        }
-
-        switch (buttonID) {
-            default: break;
-            case SDL_CONTROLLER_BUTTON_ZL: {
-                float delta = normalize(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFT_TRIGGER), 0, 32767);
-                pressed |= delta > LTRIGGER_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_ZR: {
-                float delta = normalize(SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHT_TRIGGER), 0, 32767);
-                pressed |= delta > RTRIGGER_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_LSTICK_UP: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta < -LSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_LSTICK_DOWN: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTY);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta > LSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_LSTICK_LEFT: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta > LSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_LSTICK_RIGHT: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_LEFTX);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta < -LSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_RSTICK_UP: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHTY);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta < -RSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_RSTICK_DOWN: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHTY);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta > RSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_RSTICK_LEFT: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHTX);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta > RSTICK_DEADZONE;
-                continue;
-            }
-            case SDL_CONTROLLER_BUTTON_RSTICK_RIGHT: {
-                int axis    = SDL_GetGamepadAxis(controller, SDL_GAMEPAD_AXIS_RIGHTX);
-                float delta = 0;
-                if (axis < 0)
-                    delta = -normalize(-axis, 1, 32768);
-                else
-                    delta = normalize(axis, 0, 32767);
-                pressed |= delta < -RSTICK_DEADZONE;
-                continue;
-            }
-        }
-    }
-
-    return pressed;
-}
-
-void ControllerInit(byte controllerID)
-{
-    SDL_Gamepad *controller = SDL_OpenGamepad(controllerID);
-    if (controller) {
-        controllers.push_back(controller);
-        inputType = 1;
-    }
-}
-
-void ControllerClose(byte controllerID)
-{
-    SDL_Gamepad *controller = SDL_GetGamepadFromInstanceID(controllerID);
-    if (controller) {
-        SDL_CloseGamepad(controller);
-        controllers.erase(std::remove(controllers.begin(), controllers.end(), controller), controllers.end());
-    }
-
-    if (controllers.empty()) {
-        inputType = 0;
-    }
-}
-#endif
-
 
 void ProcessInput()
 {
-#if RETRO_USING_SDL3
-    int length           = 0;
-    const byte *keyState = SDL_GetKeyboardState(&length);
-
-    if (inputType == 0) {
-        for (int i = 0; i < INPUT_ANY; i++) {
-            if (keyState[inputDevice[i].keyMappings]) {
-                inputDevice[i].setHeld();
-                if (!inputDevice[INPUT_ANY].hold)
-                    inputDevice[INPUT_ANY].setHeld();
-            }
-            else if (inputDevice[i].hold)
-                inputDevice[i].setReleased();
-        }
-    }
-    else if (inputType == 1) {
-        for (int i = 0; i < INPUT_ANY; i++) {
-            if (getControllerButton(inputDevice[i].contMappings)) {
-                inputDevice[i].setHeld();
-                if (!inputDevice[INPUT_ANY].hold)
-                    inputDevice[INPUT_ANY].setHeld();
-            }
-            else if (inputDevice[i].hold)
-                inputDevice[i].setReleased();
-        }
-    }
-
-    bool isPressed = false;
-    for (int i = 0; i < INPUT_BUTTONCOUNT; i++) {
-        if (keyState[inputDevice[i].keyMappings]) {
-            isPressed = true;
-            break;
-        }
-    }
-    if (isPressed)
-        inputType = 0;
-    else if (inputType == 0)
-        inputDevice[INPUT_ANY].setReleased();
-
-    isPressed = false;
-    for (int i = 0; i < SDL_GAMEPAD_BUTTON_MAX; i++) {
-        if (getControllerButton(i)) {
-            isPressed = true;
-            break;
-        }
-    }
-    if (isPressed)
-        inputType = 1;
-    else if (inputType == 1)
-        inputDevice[INPUT_ANY].setReleased();
-
-    if (inputDevice[INPUT_ANY].press || inputDevice[INPUT_ANY].hold || touches > 1) {
-        Engine.dimTimer = 0;
-    }
-    else if (Engine.dimTimer < Engine.dimLimit && !Engine.masterPaused) {
-        ++Engine.dimTimer;
-    }
-
-#ifdef RETRO_USING_MOUSE
-    if (touches <= 0) {
-        float mx = 0, my = 0;
-        SDL_GetMouseState(&mx, &my);
-
-        if (mx == lastMouseX && my == lastMouseY) {
-            ++mouseHideTimer;
-            if (mouseHideTimer == 120) {
-                SDL_ShowCursor();
-            }
-        }
-        else {
-            if (mouseHideTimer >= 120)
-                SDL_ShowCursor();
-            mouseHideTimer  = 0;
-            Engine.dimTimer = 0;
-        }
-
-        lastMouseX = mx;
-        lastMouseY = my;
-    }
-#endif //! RETRO_USING_MOUSE
-
-#elif RETRO_USING_SDL2
+#if RETRO_USING_SDL2
     int length           = 0;
     const byte *keyState = SDL_GetKeyboardState(&length);
 

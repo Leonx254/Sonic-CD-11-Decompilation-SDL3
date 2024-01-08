@@ -1,7 +1,7 @@
 add_library(RetroEngine SHARED ${RETRO_FILES})
 
 set(DEP_PATH android)
-set(RETRO_SDL_VERSION 3)
+set(RETRO_SDL_VERSION 2)
 set(RETRO_USE_HW_RENDER ON)
 set(RETRO_OUTPUT_NAME "RetroEngine")
 
@@ -20,7 +20,7 @@ target_link_libraries(RetroEngine
     z
     jnigraphics
     OpenSLES
-    SDL3::SDL3
+    SDL2
 )
 
 target_link_options(RetroEngine PRIVATE -u GameActivity_onCreate)

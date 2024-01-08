@@ -22,11 +22,7 @@ bool videoSkipped = false;
 static long videoRead(THEORAPLAY_Io *io, void *buf, long buflen)
 {
     FileIO *file    = (FileIO *)io->userdata;
-#if !RETRO_USING_SDL3
     const size_t br = fRead(buf, 1, buflen * sizeof(byte), file);
-#else
-    const size_t br = fRead(buf, buflen * sizeof(byte), file);
-#endif
     if (br == 0)
         return -1;
     return (int)br;
@@ -104,7 +100,7 @@ void PlayVideoFile(char *filePath)
         callbacks.read     = videoRead;
         callbacks.close    = videoClose;
         callbacks.userdata = (void *)file;
-#if (RETRO_USING_SDL2 || RETRO_USING_SDL3) && !RETRO_USING_OPENGL
+#if RETRO_USING_SDL2 && !RETRO_USING_OPENGL
         videoDecoder = THEORAPLAY_startDecode(&callbacks, /*FPS*/ 30, THEORAPLAY_VIDFMT_IYUV, GetGlobalVariableByName("Options.Soundtrack") ? 1 : 0);
 #endif
 
@@ -263,7 +259,7 @@ int ProcessVideo()
                 glBindTexture(GL_TEXTURE_2D, videoBuffer);
                 glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, videoVidData->width, videoVidData->height, GL_RGBA, GL_UNSIGNED_BYTE, videoVidData->pixels);
                 glBindTexture(GL_TEXTURE_2D, 0);
-#elif RETRO_USING_SDL2 || RETRO_USING_SDL3
+#elif RETRO_USING_SDL2
                 int half_w     = videoVidData->width / 2;
                 const Uint8 *y = (const Uint8 *)videoVidData->pixels;
                 const Uint8 *u = y + (videoVidData->width * videoVidData->height);
@@ -291,7 +287,7 @@ void StopVideoPlayback()
         // `videoPlaying` and `videoDecoder` are read by
         // the audio thread, so lock it to prevent a race
         // condition that results in invalid memory accesses.
-        LockAudioDevice();
+        SDL_LockAudio();
 
         if (videoSkipped && fadeMode >= 0xFF)
             fadeMode = 0;
@@ -308,7 +304,7 @@ void StopVideoPlayback()
         CloseVideoBuffer();
         videoPlaying = 0;
 
-        UnlockAudioDevice();
+        SDL_UnlockAudio();
     }
 }
 
@@ -335,7 +331,7 @@ void SetupVideoBuffer(int width, int height)
 
     if (!Engine.videoBuffer)
         PrintLog("Failed to create video buffer!");
-#elif RETRO_USING_SDL2 || RETRO_USING_SDL3
+#elif RETRO_USING_SDL2
     Engine.videoBuffer = SDL_CreateTexture(Engine.renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, width, height);
 
     if (!Engine.videoBuffer)
@@ -354,7 +350,7 @@ void CloseVideoBuffer()
 #elif RETRO_USING_SDL1
         SDL_FreeSurface(Engine.videoBuffer);
         Engine.videoBuffer = nullptr;
-#elif RETRO_USING_SDL2 || RETRO_USING_SDL3
+#elif RETRO_USING_SDL2
         SDL_DestroyTexture(Engine.videoBuffer);
         Engine.videoBuffer = nullptr;
 #endif
