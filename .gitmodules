@@ -7,3 +7,4 @@
 [submodule "dependencies/linux/SDL"]
 	path = dependencies/linux/SDL
 	url = https://github.com/libsdl-org/SDL
+
