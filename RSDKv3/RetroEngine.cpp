@@ -504,13 +504,9 @@ void RetroEngine::Init()
     running  = false;
     if (LoadGameConfig("Data/Game/GameConfig.bin")) {
         if (InitRenderDevice()) {
-            PrintLog("Render Initiated");
             if (InitAudioPlayback()) {
-                PrintLog("Audio Initiated");
                 InitFirstStage();
-                PrintLog("Stage Initiated");
                 ClearScriptData();
-                PrintLog("Script Data Cleaned");
                 initialised = true;
                 running     = true;
                 gameMode    = ENGINE_MAINGAME;
@@ -548,30 +544,30 @@ void RetroEngine::Init()
         }
 
         char textBuf[0x100];
-#if !RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
         sprintf(textBuf, "RETRO ENGINE v3 USAGE:\n");
-        fWrite(textBuf, 1, strlen(textBuf), f);
+        fWrite(textBuf, strlen(textBuf), f);
 
         sprintf(textBuf, "- Open the asset directory '%s' in a file browser\n", !rootDir[0] ? "./" : rootDir);
-        fWrite(textBuf, 1, strlen(textBuf), f);
+        fWrite(textBuf, strlen(textBuf), f);
 
         sprintf(textBuf, "- Place a data pack named '%s' in the asset directory\n", Engine.dataFile);
-        fWrite(textBuf, 1, strlen(textBuf), f);
+        fWrite(textBuf, strlen(textBuf), f);
 
         sprintf(textBuf, "- OR extract a data pack and place the \"Data\" folder in the asset directory\n");
-        fWrite(textBuf, 1, strlen(textBuf), f);
+        fWrite(textBuf, strlen(textBuf), f);
 #else
         sprintf(textBuf, "RETRO ENGINE v3 USAGE:\n");
-        fWrite(textBuf, strlen(textBuf), f);
+        fWrite(textBuf, 1, strlen(textBuf), f);
 
         sprintf(textBuf, "- Open the asset directory '%s' in a file browser\n", !rootDir[0] ? "./" : rootDir);
-        fWrite(textBuf, strlen(textBuf), f);
+        fWrite(textBuf, 1, strlen(textBuf), f);
 
         sprintf(textBuf, "- Place a data pack named '%s' in the asset directory\n", Engine.dataFile);
-        fWrite(textBuf, strlen(textBuf), f);
+        fWrite(textBuf, 1, strlen(textBuf), f);
 
         sprintf(textBuf, "- OR extract a data pack and place the \"Data\" folder in the asset directory\n");
-        fWrite(textBuf, strlen(textBuf), f);
+        fWrite(textBuf, 1, strlen(textBuf), f);
 #endif
         fClose(f);
     }

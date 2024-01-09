@@ -1,6 +1,10 @@
 ![](header.png?raw=true)
 
 A complete decompilation of Retro Engine v3.
+# TODO
+* Fix Android release build being unplayable.
+* Fix videos not upscaling when built without OpenGL.
+* Update building methods once SDL3 officially releases.
 
 # **SUPPORT THE OFFICIAL RELEASE OF SONIC CD**
 + Without assets from the official release, this decompilation will not run.
@@ -69,12 +73,16 @@ Finally, follow the [compilation steps below](#compiling) using `-DCMAKE_TOOLCHA
   - If you're compiling a 32-bit build, replace each instance of `x64-windows-static` with `x86-windows-static`.
 
 ### Linux
-Install the following dependencies: then follow the [compilation steps below](#compiling):
-- **pacman (Arch):** `sudo pacman -S base-devel cmake glew sdl2 libogg libtheora libvorbis`
-- **apt (Debian/Ubuntu):** `sudo apt install build-essential cmake libglew-dev libglfw3-dev libsdl2-dev libogg-dev libtheora-dev libvorbis-dev`
-- **rpm (Fedora):** `sudo dnf install make gcc cmake glew-devel glfw-devel sdl2-devel libogg-devel libtheora-devel libvorbis-devel zlib-devel`
-- **apk (Alpine/PostmarketOS)** `sudo apk add build-base cmake glew-dev glfw-dev sdl2-dev libogg-dev libtheora-dev libvorbis-dev`
+Install the following dependencies:
+- **pacman (Arch):** `sudo pacman -S base-devel cmake glew libogg libtheora libvorbis`
+- **apt (Debian/Ubuntu):** `sudo apt install build-essential cmake libglew-dev libglfw3-dev libogg-dev libtheora-dev libvorbis-dev`
+- **rpm (Fedora):** `sudo dnf install make gcc cmake glew-devel glfw-devel libogg-devel libtheora-devel libvorbis-devel zlib-devel`
+- **apk (Alpine/PostmarketOS)** `sudo apk add build-base cmake glew-dev glfw-dev libogg-dev libtheora-dev libvorbis-dev`
 - Your favorite package manager here, [make a pull request](https://github.com/Rubberduckycooly/Sonic-CD-11-Decompilation/fork)
+
+Then, go to `./dependencies/linux/` and clone `https://github.com/libsdl-org/SDL`
+
+After that, follow the [compilation steps below](#compiling)
 
 ## Android
 Follow the android build instructions [here.](./dependencies/android/README.md)
@@ -98,19 +106,7 @@ The following cmake arguments are available when compiling:
 - `RETRO_MOD_LOADER`: Enables or disables the mod loader. Takes a boolean, defaults to `on`.
 - `RETRO_USE_HW_RENDER`: Enables the Hardware Renderer as an option. Takes a boolean, defaults to `on`.
 - `RETRO_ORIGINAL_CODE`: Removes any custom code. *A playable game will not be built with this enabled.* Takes a boolean, defaults to `off`.
-- `RETRO_SDL_VERSION`: *Only change this if you know what you're doing.* Switches between using SDL1 or SDL2. Takes an integer of either `1` or `2`, defaults to `2`.
-
-## Unofficial Branches
-Follow the installation instructions in the readme of each branch.
-* For the **Nintendo Switch**, go to [heyjoeway's fork](https://github.com/heyjoeway/Sonic-CD-11-Decompilation).
-* For the **Nintendo 3DS**, go to [SaturnSH2x2's fork](https://github.com/SaturnSH2x2/Sonic-CD-11-3DS).
-  * A New Nintendo 3DS is required for the game to run smoothly.
-  
-Because these branches are unofficial, we can't provide support for them and they may not be up-to-date.
-
-## Other Platforms
-Currently the only supported platforms are the ones listed above, however the backend uses libogg, libvorbis, libtheora & SDL2 to power it (as well as tinyxml2 for the mod API), so the codebase is very multiplatform.
-If you're able to, you can clone this repo and port it to a platform not on the list.
+- `RETRO_SDL_VERSION`: *Only change this if you know what you're doing.* Switches between using SDL1, SDL2 or SDL3. Takes an integer of either `1`, `2` or `3`, defaults to `3`.
 
 # FAQ
 You can find the FAQ [here](./FAQ.md).

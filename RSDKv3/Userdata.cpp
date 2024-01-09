@@ -182,10 +182,10 @@ bool ReadSaveRAMData()
             return false;
         useSGame = true;
     }
-#if !RETRO_USING_SDL3
-    fRead(saveRAM, 4, SAVEDATA_SIZE, saveFile);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     fRead(saveRAM, SAVEDATA_SIZE, saveFile);
+#else
+    fRead(saveRAM, 4, SAVEDATA_SIZE, saveFile);
  #endif
 
 
@@ -278,10 +278,10 @@ bool WriteSaveRAMData()
 #endif
 #endif
 
-#if !RETRO_USING_SDL3
-    fWrite(saveRAM, 4, SAVEDATA_SIZE, saveFile);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     fWrite(saveRAM, SAVEDATA_SIZE, saveFile);
+#else
+    fWrite(saveRAM, 4, SAVEDATA_SIZE, saveFile);
 #endif
     fClose(saveFile);
     return true;
@@ -1003,18 +1003,18 @@ void ReadUserdata()
 
     int buf = 0;
     for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) {
-#if !RETRO_USING_SDL3
-        fRead(&buf, 4, 1, userFile);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
         fRead(&buf, 1, userFile);
+#else
+        fRead(&buf, 4, 1, userFile);
 #endif
         achievements[a].status = buf;
     }
     for (int l = 0; l < LEADERBOARD_COUNT; ++l) {
-#if !RETRO_USING_SDL3
-        fRead(&buf, 4, 1, userFile);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
         fRead(&buf, 1, userFile);
+#else
+        fRead(&buf, 4, 1, userFile);
 #endif
         leaderboards[l].score = buf;
         if (!leaderboards[l].score)
@@ -1067,12 +1067,12 @@ void WriteUserdata()
     if (!userFile)
         return;
 
-#if !RETRO_USING_SDL3
-    for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 4, 1, userFile);
-    for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 4, 1, userFile);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 1, userFile);
     for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 1, userFile);
+#else
+    for (int a = 0; a < ACHIEVEMENT_COUNT; ++a) fWrite(&achievements[a].status, 4, 1, userFile);
+    for (int l = 0; l < LEADERBOARD_COUNT; ++l) fWrite(&leaderboards[l].score, 4, 1, userFile);
 #endif
 
     fClose(userFile);

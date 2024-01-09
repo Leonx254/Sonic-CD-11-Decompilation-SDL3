@@ -51,7 +51,7 @@ IniParser::IniParser(const char *filename, bool addPath)
         int ret    = 0;
         int strLen = 0;
         while (true) {
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
             ret = (int)fRead(&buf[strLen++], sizeof(byte), f);
 #else
             ret = (int)fRead(&buf[strLen++], sizeof(byte), 1, f);
@@ -322,7 +322,7 @@ void IniParser::Write(const char *filename, bool addPath)
                 case INI_ITEM_FLOAT:
                 case INI_ITEM_BOOL:
                     sprintf(buffer, "%s=%s\n", items[i].key, items[i].value);
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
                     fWrite(&buffer, StrLength(buffer), f);
 #else
                     fWrite(&buffer, 1, StrLength(buffer), f);
@@ -330,7 +330,7 @@ void IniParser::Write(const char *filename, bool addPath)
                     break;
                 case INI_ITEM_COMMENT: 
                     sprintf(buffer, "; %s\n", items[i].value);
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
                     fWrite(&buffer, StrLength(buffer), f);
 #else
                     fWrite(&buffer, 1, StrLength(buffer), f);
@@ -340,7 +340,7 @@ void IniParser::Write(const char *filename, bool addPath)
         }
     }
     sprintf(buffer, "\n");
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     fWrite(&buffer, StrLength(buffer), f);
 #else
     fWrite(&buffer, StrLength(buffer), 1, f);
@@ -349,7 +349,7 @@ void IniParser::Write(const char *filename, bool addPath)
     // Sections
     for (int s = 0; s < c; ++s) {
         sprintf(buffer, "[%s]\n", sections[s]);
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
         fWrite(&buffer, StrLength(buffer), f);
 #else
         fWrite(&buffer, 1, StrLength(buffer), f);
@@ -363,7 +363,7 @@ void IniParser::Write(const char *filename, bool addPath)
                     case INI_ITEM_FLOAT:
                     case INI_ITEM_BOOL: 
                         sprintf(buffer, "%s=%s\n", items[i].key, items[i].value);
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
                         fWrite(&buffer, StrLength(buffer), f);
 #else
                         fWrite(&buffer, 1, StrLength(buffer), f);
@@ -371,7 +371,7 @@ void IniParser::Write(const char *filename, bool addPath)
                         break;
                     case INI_ITEM_COMMENT: 
                         sprintf(buffer, "; %s\n", items[i].value);
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
                         fWrite(&buffer, StrLength(buffer), f);
 #else
                         fWrite(&buffer, 1, StrLength(buffer), f);
@@ -383,7 +383,7 @@ void IniParser::Write(const char *filename, bool addPath)
 
         if (s + 1 < c) {
             sprintf(buffer, "\n");
-#if RETRO_USING_SDL3
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
             fWrite(&buffer, StrLength(buffer), f);
 #else
             fWrite(&buffer, StrLength(buffer), 1, f);

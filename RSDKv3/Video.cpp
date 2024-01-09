@@ -21,11 +21,11 @@ bool videoSkipped = false;
 
 static long videoRead(THEORAPLAY_Io *io, void *buf, long buflen)
 {
-    FileIO *file    = (FileIO *)io->userdata;
-#if !RETRO_USING_SDL3
-    const size_t br = fRead(buf, 1, buflen * sizeof(byte), file);
-#else
+    FileIO *file = (FileIO *)io->userdata;
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     const size_t br = fRead(buf, buflen * sizeof(byte), file);
+#else
+    const size_t br = fRead(buf, 1, buflen * sizeof(byte), file);
 #endif
     if (br == 0)
         return -1;

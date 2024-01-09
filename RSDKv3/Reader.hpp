@@ -117,10 +117,10 @@ inline size_t FillFileBuffer()
         readSize = 0x2000;
     else
         readSize = fileSize - readPos;
-#if !RETRO_USING_SDL3
-    size_t result = fRead(fileBuffer, 1, readSize, cFileHandle);
-#else
+#if RETRO_USING_SDL3 && !FORCE_CASE_INSENSITIVE
     size_t result = fRead(fileBuffer, readSize, cFileHandle);
+#else
+    size_t result = fRead(fileBuffer, 1, readSize, cFileHandle);
 #endif
     readPos += readSize;
     bufferPosition = 0;

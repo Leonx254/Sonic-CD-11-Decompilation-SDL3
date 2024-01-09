@@ -753,7 +753,6 @@ void LoadSfx(char *filePath, byte sfxID)
                     sfxList[sfxID].buffer = (Sint16 *)dst_data;
                     sfxList[sfxID].length = dst_length / sizeof(Sint16);
                     sfxList[sfxID].loaded = true;
-                    SDL_free(&dst_data);
                 }
                 else {
                     PrintLog("Unable to convert sample : %s", SDL_GetError());
