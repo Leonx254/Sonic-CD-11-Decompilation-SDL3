@@ -31,7 +31,11 @@ inline void PrintLog(const char *msg, ...)
 #endif
         FileIO *file = fOpen(pathBuffer, "a");
         if (file) {
+#if RETRO_USING_SDL3
+            fWrite(&buffer, StrLength(buffer), file);
+#else
             fWrite(&buffer, 1, StrLength(buffer), file);
+#endif
             fClose(file);
         }
     }

@@ -100,6 +100,6 @@ LOCAL_SRC_FILES := $(subst jni/src/, , $(WILDCARD_SETUP))
 
 LOCAL_LDLIBS := -lGLESv1_CM -llog
 
-LOCAL_SHARED_LIBRARIES := SDL2 libogg libvorbis libtheora
+LOCAL_SHARED_LIBRARIES := SDL3 libogg libvorbis libtheora
 
 include $(BUILD_SHARED_LIBRARY)

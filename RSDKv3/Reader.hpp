@@ -1,7 +1,7 @@
 #ifndef READER_H
 #define READER_H
 
-#ifdef FORCE_CASE_INSENSITIVE
+#if FORCE_CASE_INSENSITIVE
 
 #include "fcaseopen.h"
 #define FileIO                                          FILE
@@ -14,7 +14,15 @@
 
 #else
 
-#if RETRO_USING_SDL2
+#if RETRO_USING_SDL3
+#define FileIO                                          SDL_RWops
+#define fOpen(path, mode)                               SDL_RWFromFile(path, mode)
+#define fRead(buffer, elementSize, file)                SDL_RWread(file, buffer, elementSize)
+#define fSeek(file, offset, whence)                     SDL_RWseek(file, offset, whence)
+#define fTell(file)                                     SDL_RWtell(file)
+#define fClose(file)                                    SDL_RWclose(file)
+#define fWrite(buffer, elementSize, file)               SDL_RWwrite(file, buffer, elementSize)
+#elif RETRO_USING_SDL2
 #define FileIO                                          SDL_RWops
 #define fOpen(path, mode)                               SDL_RWFromFile(path, mode)
 #define fRead(buffer, elementSize, elementCount, file)  SDL_RWread(file, buffer, elementSize, elementCount)
@@ -109,8 +117,11 @@ inline size_t FillFileBuffer()
         readSize = 0x2000;
     else
         readSize = fileSize - readPos;
-
+#if !RETRO_USING_SDL3
     size_t result = fRead(fileBuffer, 1, readSize, cFileHandle);
+#else
+    size_t result = fRead(fileBuffer, readSize, cFileHandle);
+#endif
     readPos += readSize;
     bufferPosition = 0;
     return result;
