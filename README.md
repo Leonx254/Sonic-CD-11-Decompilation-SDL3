@@ -2,7 +2,6 @@
 
 A complete decompilation of Retro Engine v3.
 # TODO
-* Fix Android release build being unplayable.
 * Fix videos not upscaling when built without OpenGL.
 * Update building methods once SDL3 officially releases.
 
