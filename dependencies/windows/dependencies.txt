@@ -1,3 +1,6 @@
+SDL3 (optional, use SDL2 if unsure): https://github.com/libsdl-org/SDL
+Download the source code and unzip it, rename the folder to "SDL3", then build the SDL3 library (VisualC/SDL.sln)
+
 SDL2: https://www.libsdl.org/download-2.0.php
 download the appropriate development library for your compiler and unzip it in "./SDL2/"
 
