@@ -5,6 +5,8 @@ find_package(PkgConfig REQUIRED)
 
 add_executable(RetroEngine ${RETRO_FILES})
 
+set(DEP_PATH linux)
+
 pkg_check_modules(OGG ogg)
 
 if(NOT OGG_FOUND)
@@ -55,7 +57,12 @@ if(RETRO_USE_HW_RENDER)
     endif()
 endif()
 
-if(RETRO_SDL_VERSION STREQUAL "2")
+if(RETRO_SDL_VERSION STREQUAL "3")
+    add_subdirectory(dependencies/${DEP_PATH}/SDL)
+    target_link_libraries(RetroEngine
+        SDL3::SDL3
+    )
+elseif(RETRO_SDL_VERSION STREQUAL "2")
     pkg_check_modules(SDL2 sdl2 REQUIRED)
     target_link_libraries(RetroEngine ${SDL2_STATIC_LIBRARIES})
     target_link_options(RetroEngine PRIVATE ${SDL2_STATIC_LDLIBS_OTHER})
