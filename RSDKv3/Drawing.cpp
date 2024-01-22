@@ -103,7 +103,15 @@ int InitRenderDevice()
     sprintf(gameTitle, "%s%s", Engine.gameWindowText, Engine.usingDataFile_Config ? "" : " (Using Data Folder)");
 
 #if RETRO_USING_SDL2 || RETRO_USING_SDL3
+#if RETRO_USING_SDL3
+    SDL_Init(SDL_INIT_GAMEPAD);
+    SDL_Init(SDL_INIT_TIMER);
+    SDL_Init(SDL_INIT_AUDIO);
+    SDL_Init(SDL_INIT_VIDEO);
+#else
     SDL_Init(SDL_INIT_EVERYTHING);
+#endif
+
 
     SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "nearest");
     SDL_SetHint(SDL_HINT_RENDER_VSYNC, Engine.vsync ? "1" : "0");
